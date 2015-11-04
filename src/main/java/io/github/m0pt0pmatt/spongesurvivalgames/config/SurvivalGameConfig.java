@@ -25,12 +25,17 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.config;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import java.util.*;
-
 public class SurvivalGameConfig {
+
 
     private String worldName;
 
@@ -50,7 +55,7 @@ public class SurvivalGameConfig {
 
     private Double chestRange;
 
-    private List<ItemStack> loot = new ArrayList<>();
+    private List<ItemStack> loot = new ArrayList<ItemStack>();
 
     public Optional<String> getWorldName() {
         return worldName == null ? Optional.empty() : Optional.of(worldName);
