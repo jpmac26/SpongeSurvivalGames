@@ -33,9 +33,9 @@ import org.bukkit.command.CommandSender;
 import java.util.Map;
 
 /**
- * Command to set the chest midpoint value for a game
+ * Command to set the bounds of a game
  */
-public class SetChestMidpointCommand extends StoppedCommand {
+public class SetBoundsCommand extends StoppedCommand {
 
     @Override
     public boolean execute(CommandSender sender, Map<String, String> arguments) {
@@ -44,23 +44,41 @@ public class SetChestMidpointCommand extends StoppedCommand {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.MIDPOINT)) {
-            Bukkit.getLogger().warning("Chest midpoint was not present.");
+        if (
+                !arguments.containsKey(CommandKeywords.XMIN) ||
+                        !arguments.containsKey(CommandKeywords.XMAX) ||
+                        !arguments.containsKey(CommandKeywords.YMIN) ||
+                        !arguments.containsKey(CommandKeywords.YMAX) ||
+                        !arguments.containsKey(CommandKeywords.ZMIN) ||
+                        !arguments.containsKey(CommandKeywords.ZMAX)
+                ) {
+            Bukkit.getLogger().warning("Missing one or more bounds.");
             return false;
         }
 
-        String chestMidpoint = arguments.get(CommandKeywords.MIDPOINT);
+        String xMinString = arguments.get(CommandKeywords.XMIN);
+        String yMinString = arguments.get(CommandKeywords.YMIN);
+        String zMinString = arguments.get(CommandKeywords.ZMIN);
+        String xMaxString = arguments.get(CommandKeywords.XMAX);
+        String yMaxString = arguments.get(CommandKeywords.YMAX);
+        String zMaxString = arguments.get(CommandKeywords.ZMAX);
 
-        Double midpoint;
+        int xMin, xMax, yMin, yMax, zMin, zMax;
         try {
-            midpoint = Double.parseDouble(chestMidpoint);
+            xMin = Integer.parseInt(xMinString);
+            yMin = Integer.parseInt(yMinString);
+            zMin = Integer.parseInt(zMinString);
+            xMax = Integer.parseInt(xMaxString);
+            yMax = Integer.parseInt(yMaxString);
+            zMax = Integer.parseInt(zMaxString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert String to Double");
+            Bukkit.getLogger().warning("Unable to convert from String to Integer");
             return false;
         }
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setChestMidpoint(midpoint);
-        Bukkit.getLogger().info("Chest midpoint for game \"" + id + "\" set to " + midpoint + ".");
+        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setBounds(xMin, xMax, yMin, yMax, zMin, zMax);
+        Bukkit.getLogger().info("Bounds set for game \"" + id + "\".");
+
         return true;
     }
 }

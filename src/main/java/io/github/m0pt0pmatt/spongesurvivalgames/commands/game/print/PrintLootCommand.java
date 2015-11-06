@@ -23,29 +23,33 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.commands;
+package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
+import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
+import io.github.m0pt0pmatt.spongesurvivalgames.loot.Loot;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * Base class for all commands.
- * <p>Checks that arguments are not null</p>
+ * Command to print the loot of a game
  */
-public abstract class SurvivalGamesCommand {
+public class PrintLootCommand extends GameCommand {
 
+    @Override
     public boolean execute(CommandSender sender, Map<String, String> arguments) {
 
-        if (sender == null) {
-            Bukkit.getLogger().warning("CommandSender was null");
+        if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (arguments == null) {
-            Bukkit.getLogger().warning("Argument Map was null");
-            return false;
+        List<Loot> loot = BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getLoot();
+        Bukkit.getLogger().info("Printing loot for game \"" + id + "\":");
+        for (Loot l: loot){
+            Bukkit.getLogger().info("Item: " + l.getItem().toString() + ", Weight: " + l.getWeight());
         }
 
         return true;

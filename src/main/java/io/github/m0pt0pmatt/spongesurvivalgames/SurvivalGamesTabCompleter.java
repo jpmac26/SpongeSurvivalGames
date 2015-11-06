@@ -23,31 +23,31 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.commands;
+package io.github.m0pt0pmatt.spongesurvivalgames;
 
-import org.bukkit.Bukkit;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-
-import java.util.Map;
+import org.bukkit.command.TabCompleter;
 
 /**
- * Base class for all commands.
- * <p>Checks that arguments are not null</p>
+ * Tab completer for the plugin
  */
-public abstract class SurvivalGamesCommand {
+public class SurvivalGamesTabCompleter implements TabCompleter {
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
 
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
-
-        if (sender == null) {
-            Bukkit.getLogger().warning("CommandSender was null");
-            return false;
+        for (int i = 0; i < strings.length; i++) {
+            strings[i] = strings[i].toLowerCase();
         }
 
-        if (arguments == null) {
-            Bukkit.getLogger().warning("Argument Map was null");
-            return false;
-        }
-
-        return true;
+        List<String> list = BukkitSurvivalGamesPlugin.commandTrie.partialMatch(strings);
+        if (list == null) return new LinkedList<>();
+        List<String> lowerCase = new ArrayList<>(list.size());
+        list.forEach(st -> lowerCase.add(st.toLowerCase()));
+        return lowerCase;
     }
 }

@@ -23,34 +23,37 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.events;
+package io.github.m0pt0pmatt.spongesurvivalgames;
 
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.SurvivalGamesCommand;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
-import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGameState;
+/**
+ * Command Executor for the plugin
+ */
+public class SurvivalGamesCommandExecutor implements CommandExecutor {
 
-public class PlayerDeathEventListener implements Listener{
+    @Override
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
 
-    public void onPlayerDeath(PlayerDeathEvent event){
+        Map<String, String> arguments = new HashMap<>();
 
-        Player player = event.getEntity();
-
-        for (Map.Entry<String, SurvivalGame> game: BukkitSurvivalGamesPlugin.survivalGameMap.entrySet()){
-            if (game.getValue().getState().equals(SurvivalGameState.RUNNING)){
-                if (game.getValue().getWorldName().get().equals(player.getLocation().getWorld().getName())){
-                    //Death has occurred inside the game
-                    game.getValue().reportDeath(player.getUniqueId());
-                    return;
-                }
-            }
+        for (int i = 0; i < strings.length; i++) {
+            strings[i] = strings[i].toLowerCase();
         }
 
-    }
+        SurvivalGamesCommand cmd = BukkitSurvivalGamesPlugin.commandTrie.match(strings, arguments);
+        if (cmd == null) {
+            Bukkit.getLogger().warning("No command found");
+            return false;
+        }
 
+        return cmd.execute(commandSender, arguments);
+    }
 }

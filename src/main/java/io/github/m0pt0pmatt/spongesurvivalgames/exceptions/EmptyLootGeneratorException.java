@@ -23,31 +23,11 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.commands;
+package io.github.m0pt0pmatt.spongesurvivalgames.exceptions;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-
-import java.util.Map;
-
-/**
- * Base class for all commands.
- * <p>Checks that arguments are not null</p>
- */
-public abstract class SurvivalGamesCommand {
-
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
-
-        if (sender == null) {
-            Bukkit.getLogger().warning("CommandSender was null");
-            return false;
-        }
-
-        if (arguments == null) {
-            Bukkit.getLogger().warning("Argument Map was null");
-            return false;
-        }
-
-        return true;
-    }
+public class EmptyLootGeneratorException extends SurvivalGameException {
+	@Override
+	public String getDescription() {
+		return "The loot generator cannot be empty!";
+	}
 }

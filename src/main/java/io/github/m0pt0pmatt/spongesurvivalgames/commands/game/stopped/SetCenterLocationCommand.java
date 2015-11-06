@@ -25,15 +25,14 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import java.util.Map;
-import java.util.Optional;
-
+import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldException;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldNameException;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldException;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldNameException;
+import java.util.Map;
 
 /**
  * Command to set the center location for the game (where players look when they spawn)
@@ -41,29 +40,31 @@ import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldNameException;
  */
 public class SetCenterLocationCommand extends StoppedCommand {
 
-    public SetCenterLocationCommand(Map<String, String> arguments){
-        super(arguments);
-    }
-
     @Override
-    public boolean execute(CommandSender sender){
+    public boolean execute(CommandSender sender, Map<String, String> arguments) {
 
-        if (!super.execute(sender)) {
+        if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        Optional<String> xString = getArgument("x");
-        Optional<String> yString = getArgument("y");
-        Optional<String> zString = getArgument("z");
-        if (!xString.isPresent() || !yString.isPresent() || !zString.isPresent()) {
+        if (!arguments.containsKey(CommandKeywords.X) || !arguments.containsKey(CommandKeywords.X) || !arguments.containsKey(CommandKeywords.X)) {
             Bukkit.getLogger().warning("Missing one or more axis for coordinates.");
             return false;
         }
 
-        //TODO: Add sanity check
-        int x = Integer.parseInt(xString.get());
-        int y = Integer.parseInt(yString.get());
-        int z = Integer.parseInt(zString.get());
+        String xString = arguments.get(CommandKeywords.X);
+        String yString = arguments.get(CommandKeywords.Y);
+        String zString = arguments.get(CommandKeywords.Z);
+
+        int x, y, z;
+        try {
+            x = Integer.parseInt(xString);
+            y = Integer.parseInt(yString);
+            z = Integer.parseInt(zString);
+        } catch (NumberFormatException e) {
+            Bukkit.getLogger().warning("Unable to convert from String to Integer");
+            return false;
+        }
 
         try {
             BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setCenterLocation(x, y, z);

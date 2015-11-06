@@ -23,31 +23,30 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.commands;
+package io.github.m0pt0pmatt.spongesurvivalgames.tasks;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-
-import java.util.Map;
+import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.TaskException;
+import org.bukkit.GameMode;
 
 /**
- * Base class for all commands.
- * <p>Checks that arguments are not null</p>
+ * Task for resetting the players' food and health levels
  */
-public abstract class SurvivalGamesCommand {
+public class ReadyPlayerTask implements SurvivalGameTask {
+    @Override
+    public void execute(SurvivalGame game) throws TaskException {
 
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+        BukkitSurvivalGamesPlugin.getPlayers(game.getPlayerUUIDs())
+                .forEach(player -> {
 
-        if (sender == null) {
-            Bukkit.getLogger().warning("CommandSender was null");
-            return false;
-        }
-
-        if (arguments == null) {
-            Bukkit.getLogger().warning("Argument Map was null");
-            return false;
-        }
-
-        return true;
+                    //TODO: Make sure these are valid
+                    player.setGameMode(GameMode.ADVENTURE);
+                    player.setMaxHealth(20);
+                    player.setHealth(player.getMaxHealth());
+                    player.setFoodLevel(20);
+                    player.setSaturation(player.getFoodLevel());
+                    player.setExhaustion(player.getFoodLevel());
+                });
     }
 }

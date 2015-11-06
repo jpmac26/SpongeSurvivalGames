@@ -23,19 +23,46 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.tasks;
-
-import org.bukkit.GameMode;
+package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
 import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
 import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.TaskException;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 
-public class SetGameModeTask implements SurvivalGameTask {
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * Command to print the bounds of a game
+ */
+public class PrintBoundsCommand extends GameCommand {
+
     @Override
-    public void execute(SurvivalGame game) throws TaskException {
+    public boolean execute(CommandSender sender, Map<String, String> arguments) {
 
-        BukkitSurvivalGamesPlugin.getPlayers(game.getPlayerUUIDs())
-                .forEach(player -> player.setGameMode(GameMode.ADVENTURE));
+        if (!super.execute(sender, arguments)) {
+            return false;
+        }
+
+        SurvivalGame game = BukkitSurvivalGamesPlugin.survivalGameMap.get(id);
+        Optional<Integer> xMin = game.getXMin();
+        Optional<Integer> xMax = game.getXMax();
+        Optional<Integer> yMin = game.getYMin();
+        Optional<Integer> yMax = game.getYMax();
+        Optional<Integer> zMin = game.getZMin();
+        Optional<Integer> zMax = game.getZMax();
+
+        if (!xMin.isPresent() || !xMax.isPresent() ||
+                !yMin.isPresent() || !yMax.isPresent() ||
+                !zMin.isPresent() || !zMax.isPresent()){
+
+            Bukkit.getLogger().warning("Game \"" + id + "\" is missing at least one bound");
+            return false;
+        }
+
+        Bukkit.getLogger().info("Game: \"" + id + "\", xMin" + xMin + ", xMax" + xMax + ", yMin" + yMin + ", yMax" + yMax + ", zMin" + zMin + ", zMax:" + zMax);
+        return true;
     }
 }
