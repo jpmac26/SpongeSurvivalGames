@@ -25,11 +25,10 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldException;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Map;
 
@@ -39,27 +38,31 @@ import java.util.Map;
 public class SetWorldCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.WORLDNAME)) {
-            Bukkit.getLogger().warning("World name was not present.");
-            return false;
+        String worldName;
+        if (!arguments.containsKey(CommandArgs.WORLDNAME)) {
+            if (sender instanceof Player) {
+                worldName = ((Player) sender).getWorld().getName();
+            } else {
+                sender.sendMessage("World name was not present.");
+                return false;
+            }
+        } else {
+            worldName = arguments.get(CommandArgs.WORLDNAME);
         }
-
-        String worldName = arguments.get(CommandKeywords.WORLDNAME);
-
         try {
-            BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setWorld(worldName);
+            game.setWorldName(worldName);
         } catch (NoWorldException e) {
-            Bukkit.getLogger().warning("World \"" + worldName + "\" does not exist.");
+            sender.sendMessage("World \"" + worldName + "\" does not exist.");
             return false;
         }
 
-        Bukkit.getLogger().info("World for game \"" + id + "\" is set to \"" + worldName + "\".");
+        sender.sendMessage("World for game \"" + game.getID() + "\" is set to \"" + worldName + "\".");
         return true;
     }
 }

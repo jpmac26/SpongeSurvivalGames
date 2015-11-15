@@ -25,10 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -40,29 +38,25 @@ import java.util.Optional;
 public class PrintBoundsCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        SurvivalGame game = BukkitSurvivalGamesPlugin.survivalGameMap.get(id);
         Optional<Integer> xMin = game.getXMin();
         Optional<Integer> xMax = game.getXMax();
-        Optional<Integer> yMin = game.getYMin();
-        Optional<Integer> yMax = game.getYMax();
         Optional<Integer> zMin = game.getZMin();
         Optional<Integer> zMax = game.getZMax();
 
         if (!xMin.isPresent() || !xMax.isPresent() ||
-                !yMin.isPresent() || !yMax.isPresent() ||
-                !zMin.isPresent() || !zMax.isPresent()){
+                !zMin.isPresent() || !zMax.isPresent()) {
 
-            Bukkit.getLogger().warning("Game \"" + id + "\" is missing at least one bound");
+            sender.sendMessage("Game \"" + game.getID() + "\" is missing at least one bound");
             return false;
         }
 
-        Bukkit.getLogger().info("Game: \"" + id + "\", xMin" + xMin + ", xMax" + xMax + ", yMin" + yMin + ", yMax" + yMax + ", zMin" + zMin + ", zMax:" + zMax);
+        sender.sendMessage("Game: \"" + game.getID() + "\", xMin" + xMin + ", xMax" + xMax + ", zMin" + zMin + ", zMax:" + zMax);
         return true;
     }
 }

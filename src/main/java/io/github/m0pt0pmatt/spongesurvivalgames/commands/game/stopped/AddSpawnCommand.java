@@ -25,12 +25,12 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldException;
 import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.WorldNotSetException;
-import org.bukkit.Bukkit;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Map;
 
@@ -40,19 +40,33 @@ import java.util.Map;
 public class AddSpawnCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
+        String xString;
+        String yString;
+        String zString;
 
-        if (!arguments.containsKey(CommandKeywords.X) || !arguments.containsKey(CommandKeywords.X) || !arguments.containsKey(CommandKeywords.X)) {
-            Bukkit.getLogger().warning("Missing one or more axis for coordinates.");
+        if (!arguments.containsKey(CommandArgs.X) && !arguments.containsKey(CommandArgs.X) && !arguments.containsKey(CommandArgs.X)) {
+            if (sender instanceof Player) {
+                Block block = ((Player) sender).getLocation().getBlock();
+                xString = String.valueOf(block.getX());
+                yString = String.valueOf(block.getY());
+                zString = String.valueOf(block.getZ());
+            } else {
+                sender.sendMessage("Missing coordinates");
+                return false;
+            }
+        } else if (!arguments.containsKey(CommandArgs.X) || !arguments.containsKey(CommandArgs.X) || !arguments.containsKey(CommandArgs.X)) {
+            sender.sendMessage("Missing one or more axis for coordinates.");
             return false;
+        } else {
+            xString = arguments.get(CommandArgs.X);
+            yString = arguments.get(CommandArgs.Y);
+            zString = arguments.get(CommandArgs.Z);
         }
-        String xString = arguments.get(CommandKeywords.X);
-        String yString = arguments.get(CommandKeywords.Y);
-        String zString = arguments.get(CommandKeywords.Z);
 
         int x, y, z;
         try {
@@ -60,20 +74,20 @@ public class AddSpawnCommand extends StoppedCommand {
             y = Integer.parseInt(yString);
             z = Integer.parseInt(zString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert from String to Integer");
+            sender.sendMessage("Unable to convert from String to Integer");
             return false;
         }
 
         try {
-            BukkitSurvivalGamesPlugin.survivalGameMap.get(id).addSpawnLocation(x, y, z);
+            game.addSpawnVector(x, y, z);
         } catch (WorldNotSetException e) {
-            Bukkit.getLogger().warning("No world set. Assign the world first.");
+            sender.sendMessage("No world set. Assign the world first.");
             return false;
         } catch (NoWorldException e) {
-            Bukkit.getLogger().warning("World does not exist.");
+            sender.sendMessage("World does not exist.");
             return false;
         }
-        Bukkit.getLogger().info("Spawn location added for game \"" + id + "\".");
+        sender.sendMessage("Spawn location added for game \"" + game.getID() + "\".");
 
         return true;
     }

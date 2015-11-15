@@ -25,9 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 
@@ -40,19 +39,19 @@ import java.util.Optional;
 public class PrintCenterCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        Optional<Location> centerLocation = BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getCenter();
+        Optional<Location> centerLocation = game.getCenterLocation();
         if (!centerLocation.isPresent()) {
-            Bukkit.getLogger().info("Game: \"" + id + "\", No Center Location.");
+            sender.sendMessage("Game: \"" + game.getID() + "\", No Center Location.");
             return false;
         }
 
-        Bukkit.getLogger().info("Game: \"" + id + "\", Center Location: \"" + centerLocation.get() + "\".");
+        sender.sendMessage("Game: \"" + game.getID() + "\", Center Location: \"" + centerLocation.get() + "\".");
         return true;
     }
 }

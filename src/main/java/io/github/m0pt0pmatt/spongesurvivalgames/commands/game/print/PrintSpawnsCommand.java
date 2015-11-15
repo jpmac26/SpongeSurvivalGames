@@ -25,9 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;
 
@@ -40,16 +39,16 @@ import java.util.Set;
 public class PrintSpawnsCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        Set<Vector> spawnLocations = BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getSpawns();
-        Bukkit.getLogger().info("Game: \"" + id + "\", " + spawnLocations.size() + " Spawn Locations.");
+        Set<Vector> spawnLocations = game.getSpawnVectors();
+        sender.sendMessage("Game: \"" + game.getID() + "\", " + spawnLocations.size() + " Spawn Locations.");
         for (Vector spawnLocation : spawnLocations) {
-            Bukkit.getLogger().info(spawnLocation.toString());
+            sender.sendMessage(spawnLocation.toString());
         }
 
         return true;

@@ -25,14 +25,13 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
 import io.github.m0pt0pmatt.spongesurvivalgames.loot.Loot;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Command to print the loot of a game
@@ -40,16 +39,16 @@ import java.util.Map;
 public class PrintLootCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        List<Loot> loot = BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getLoot();
-        Bukkit.getLogger().info("Printing loot for game \"" + id + "\":");
-        for (Loot l: loot){
-            Bukkit.getLogger().info("Item: " + l.getItem().toString() + ", Weight: " + l.getWeight());
+        Set<Loot> loot = game.getLoot();
+        sender.sendMessage("Printing loot for game \"" + game.getID() + "\":");
+        for (Loot l : loot) {
+            sender.sendMessage("Item: " + l.getItem().toString() + ", Weight: " + l.getWeight());
         }
 
         return true;

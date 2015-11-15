@@ -26,8 +26,6 @@
 package io.github.m0pt0pmatt.spongesurvivalgames.tasks;
 
 import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.EmptyLootGeneratorException;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.TaskException;
 import io.github.m0pt0pmatt.spongesurvivalgames.loot.Loot;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -35,63 +33,57 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.Inventory;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Optional;
 import java.util.Random;
 
 /**
  * Task for filling the chests with random loot
  */
-public class FillChestsTask implements SurvivalGameTask {
+class FillChestsTask implements SurvivalGameTask {
+
     @Override
-    public void execute(SurvivalGame game) throws TaskException {
+    public boolean execute(SurvivalGame game) {
+
         String worldName = game.getWorldName().get();
         World world = Bukkit.getServer().getWorld(worldName);
+        if (world == null) return false;
 
-        int xmin = game.getConfig().getXMin().get();
-        int xmax = game.getConfig().getXMax().get();
-        int ymin = game.getConfig().getYMin().get();
-        int ymax = game.getConfig().getYMax().get();
-        int zmin = game.getConfig().getZMin().get();
-        int zmax = game.getConfig().getZMax().get();
+        game.getConfig().getChestLocations().forEach(chestVector ->
 
-        Collection<Block> chests = new ArrayList<>();
-        for (int x = xmin; x < xmax; x++) {
-            for (int y = ymin; y < ymax; y++) {
-                for (int z = zmin; z < zmax; z++) {
-                    Block block = world.getBlockAt(x, y, z);
-                    if (block.getState() instanceof Chest) {
-                        chests.add(block);
-                    }
-                }
-            }
-        }
-
-        chests.forEach(block -> {
+                {
                     final Random random = new Random();
-                    Chest chest = (Chest) block.getState();
-                    Inventory inventory = chest.getBlockInventory();
-                    inventory.clear();
 
-                    double itemCount = (
-                            game.getChestMidpoint().get() +
-                                    (
-                                            (random.nextDouble() * game.getChestRange().get())
-                                                    * (random.nextDouble() > 0.5 ? 1 : -1)
-                                    )
-                    );
-                    for (int i = 0; i < itemCount; i++) {
+                    Block block = world.getBlockAt(chestVector.getBlockX(), chestVector.getBlockY(), chestVector.getBlockZ());
+                    if (block.getState() instanceof Chest) {
+                        Chest chest = (Chest) block.getState();
 
-                        try {
-                            Loot item = game.getLootGenerator().generate();
-                            if (item != null) inventory.addItem(item.getItem());
-                        } catch (EmptyLootGeneratorException e) {
+                        Inventory inventory = chest.getBlockInventory();
+                        inventory.clear();
+                        double itemCount = (
+                                game.getChestMidpoint().get() +
+                                        (
+                                                (random.nextDouble() * game.getChestRange().get())
+                                                        * (random.nextDouble() > 0.5 ? 1 : -1)
+                                        )
+                        );
+                        for (int i = 0; i < itemCount; i++) {
+                            Optional<Loot> item = game.getLootGenerator().generate();
+                            if (item.isPresent()) inventory.addItem(item.get().getItem());
+
                         }
+                        chest.update();
+                    } else
+                        System.out.println("Unable to locate chest at " + chestVector.getBlockX() + ", " + chestVector.getBlockY() + ", " + chestVector.getBlockZ());
 
-                    }
-
-                    chest.update();
                 }
+
+
         );
+
+        game.setChestsFilled();
+        Bukkit.getLogger().info("Chests have finished populating");
+        return true;
     }
+
+
 }

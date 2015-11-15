@@ -25,10 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.loot.Loot;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -41,29 +39,29 @@ import java.util.Map;
 public class AddHeldLootCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
         if (!(sender instanceof Player)) {
-            Bukkit.getLogger().warning("Command Sender must be a player");
+            sender.sendMessage("Command Sender must be a player");
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.LOOT)) {
-            Bukkit.getLogger().warning("No loot weight specified");
+        if (!arguments.containsKey(CommandArgs.WEIGHT)) {
+            sender.sendMessage("No loot weight specified");
             return false;
         }
 
-        String weightString = arguments.get(CommandKeywords.WEIGHT);
+        String weightString = arguments.get(CommandArgs.WEIGHT);
 
         Double weight;
         try {
             weight = Double.parseDouble(weightString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert from string to double");
+            sender.sendMessage("Unable to convert from string to double");
             return false;
         }
 
@@ -71,13 +69,13 @@ public class AddHeldLootCommand extends StoppedCommand {
 
         ItemStack item = player.getItemInHand();
         if (item == null) {
-            Bukkit.getLogger().warning("No item in hand");
+            sender.sendMessage("No item in hand");
             return false;
         }
 
         Loot loot = new Loot(item, weight);
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).addLoot(loot);
+        game.addLoot(loot);
 
         return true;
     }

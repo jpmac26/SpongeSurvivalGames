@@ -25,8 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import org.bukkit.Bukkit;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.SurvivalGameException;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -37,15 +37,20 @@ import java.util.Map;
 public class ReadyGameCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).ready();
-        Bukkit.getLogger().warning("Survival Game \"" + id + "\" is now set to READY.");
+        try {
+            game.ready();
+        } catch (SurvivalGameException e) {
+            sender.sendMessage(e.getDescription());
+            return false;
+        }
 
+        sender.sendMessage("Survival Game \"" + game.getID() + "\" is now set to READY.");
         return true;
     }
 }

@@ -25,9 +25,7 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
-import org.bukkit.Bukkit;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -38,46 +36,40 @@ import java.util.Map;
 public class SetBoundsCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
         if (
-                !arguments.containsKey(CommandKeywords.XMIN) ||
-                        !arguments.containsKey(CommandKeywords.XMAX) ||
-                        !arguments.containsKey(CommandKeywords.YMIN) ||
-                        !arguments.containsKey(CommandKeywords.YMAX) ||
-                        !arguments.containsKey(CommandKeywords.ZMIN) ||
-                        !arguments.containsKey(CommandKeywords.ZMAX)
+                !arguments.containsKey(CommandArgs.XMIN) ||
+                        !arguments.containsKey(CommandArgs.XMAX) ||
+                        !arguments.containsKey(CommandArgs.ZMIN) ||
+                        !arguments.containsKey(CommandArgs.ZMAX)
                 ) {
-            Bukkit.getLogger().warning("Missing one or more bounds.");
+            sender.sendMessage("Missing one or more bounds.");
             return false;
         }
 
-        String xMinString = arguments.get(CommandKeywords.XMIN);
-        String yMinString = arguments.get(CommandKeywords.YMIN);
-        String zMinString = arguments.get(CommandKeywords.ZMIN);
-        String xMaxString = arguments.get(CommandKeywords.XMAX);
-        String yMaxString = arguments.get(CommandKeywords.YMAX);
-        String zMaxString = arguments.get(CommandKeywords.ZMAX);
+        String xMinString = arguments.get(CommandArgs.XMIN);
+        String zMinString = arguments.get(CommandArgs.ZMIN);
+        String xMaxString = arguments.get(CommandArgs.XMAX);
+        String zMaxString = arguments.get(CommandArgs.ZMAX);
 
-        int xMin, xMax, yMin, yMax, zMin, zMax;
+        int xMin, xMax, zMin, zMax;
         try {
             xMin = Integer.parseInt(xMinString);
-            yMin = Integer.parseInt(yMinString);
             zMin = Integer.parseInt(zMinString);
             xMax = Integer.parseInt(xMaxString);
-            yMax = Integer.parseInt(yMaxString);
             zMax = Integer.parseInt(zMaxString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert from String to Integer");
+            sender.sendMessage("Unable to convert from String to Integer");
             return false;
         }
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setBounds(xMin, xMax, yMin, yMax, zMin, zMax);
-        Bukkit.getLogger().info("Bounds set for game \"" + id + "\".");
+        game.setBounds(xMin, xMax, zMin, zMax);
+        sender.sendMessage("Bounds set for game \"" + game.getID() + "\".");
 
         return true;
     }

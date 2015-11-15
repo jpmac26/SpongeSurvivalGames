@@ -25,32 +25,33 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CreateGameCommand;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.ListGamesCommand;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.SurvivalGamesCommand;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.LoadCommand;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.SaveCommand;
+import io.github.m0pt0pmatt.spongesurvivalgames.backups.Backup;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.*;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.*;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print.*;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.ready.AddPlayerCommand;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.ready.RemovePlayerCommand;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.ready.StartGameCommand;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.ready.StopGameCommand;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.running.ForceDeathmatchCommand;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.running.ForceStopGameCommand;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.running.RefillChestsCommand;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.running.SponsorCommand;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped.*;
 import io.github.m0pt0pmatt.spongesurvivalgames.events.PlayerEventListener;
 import io.github.m0pt0pmatt.spongesurvivalgames.loot.Loot;
 import io.github.m0pt0pmatt.spongesurvivalgames.util.LoadedTrie;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +60,7 @@ import java.util.stream.Collectors;
 public class BukkitSurvivalGamesPlugin extends JavaPlugin {
 
     public static final LoadedTrie<String, SurvivalGamesCommand> commandTrie = new LoadedTrie<>();
+    public static final Map<SurvivalGamesCommand, List<CommandArgs>> commandArgs = new HashMap<>();
     public static final Map<String, SurvivalGame> survivalGameMap = new HashMap<>();
     private static final CommandExecutor commandExecutor = new SurvivalGamesCommandExecutor();
     private static final TabCompleter tabCompleter = new SurvivalGamesTabCompleter();
@@ -68,38 +70,11 @@ public class BukkitSurvivalGamesPlugin extends JavaPlugin {
         BukkitSurvivalGamesPlugin.plugin = this;
 
         //Register all commands
-        commandTrie.add(new String[]{CommandKeywords.CREATE, CommandKeywords.ID}, new CreateGameCommand());
-        commandTrie.add(new String[]{CommandKeywords.LIST}, new ListGamesCommand());
-        commandTrie.add(new String[]{CommandKeywords.DELETE, CommandKeywords.ID}, new DeleteGameCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.CENTER, CommandKeywords.ID}, new PrintCenterCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.CHEST, CommandKeywords.MIDPOINT, CommandKeywords.ID}, new PrintChestMidpointCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.CHEST, CommandKeywords.RANGE, CommandKeywords.ID}, new PrintChestRangeCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.COUNTDOWN, CommandKeywords.ID}, new PrintCountdownCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.EXIT, CommandKeywords.ID}, new PrintExitCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.PLAYER_LIMIT, CommandKeywords.ID}, new PrintPlayerLimitCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.SPAWNS, CommandKeywords.ID}, new PrintSpawnsCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.WORLD, CommandKeywords.ID}, new PrintWorldCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.BOUNDS, CommandKeywords.ID}, new PrintBoundsCommand());
-        commandTrie.add(new String[]{CommandKeywords.PRINT, CommandKeywords.LOOT, CommandKeywords.ID}, new PrintLootCommand());
-        commandTrie.add(new String[]{CommandKeywords.ADD, CommandKeywords.SPAWN, CommandKeywords.ID, CommandKeywords.X, CommandKeywords.Y, CommandKeywords.Z}, new AddSpawnCommand());
-        commandTrie.add(new String[]{CommandKeywords.CLEAR, CommandKeywords.SPAWNS, CommandKeywords.ID}, new ClearSpawnpointsCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.CENTER, CommandKeywords.ID, CommandKeywords.X, CommandKeywords.Y, CommandKeywords.Z}, new SetCenterLocationCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.CHEST, CommandKeywords.MIDPOINT, CommandKeywords.ID, CommandKeywords.MIDPOINT,}, new SetChestMidpointCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.CHEST, CommandKeywords.RANGE, CommandKeywords.ID, CommandKeywords.RANGE}, new SetChestRangeCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.COUNTDOWN, CommandKeywords.ID, CommandKeywords.COUNTDOWN}, new SetCountdownCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.EXIT, CommandKeywords.ID, CommandKeywords.WORLDNAME, CommandKeywords.X, CommandKeywords.Y, CommandKeywords.Z}, new SetExitCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.PLAYER_LIMIT, CommandKeywords.ID, CommandKeywords.PLAYER_LIMIT}, new SetPlayerLimitCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.WORLD, CommandKeywords.ID, CommandKeywords.WORLDNAME}, new SetWorldCommand());
-        commandTrie.add(new String[]{CommandKeywords.SET, CommandKeywords.BOUNDS, CommandKeywords.ID, CommandKeywords.XMIN, CommandKeywords.XMAX, CommandKeywords.YMIN, CommandKeywords.YMAX, CommandKeywords.ZMIN, CommandKeywords.ZMAX}, new SetBoundsCommand());
-        commandTrie.add(new String[]{CommandKeywords.ADD, CommandKeywords.HELD, CommandKeywords.LOOT, CommandKeywords.ID, CommandKeywords.WEIGHT}, new AddHeldLootCommand());
-        commandTrie.add(new String[]{CommandKeywords.READY, CommandKeywords.ID}, new ReadyGameCommand());
-        commandTrie.add(new String[]{CommandKeywords.ADD, CommandKeywords.PLAYER, CommandKeywords.ID, CommandKeywords.PLAYERNAME}, new AddPlayerCommand());
-        commandTrie.add(new String[]{CommandKeywords.REMOVE, CommandKeywords.PLAYER, CommandKeywords.ID, CommandKeywords.PLAYERNAME}, new RemovePlayerCommand());
-        commandTrie.add(new String[]{CommandKeywords.START, CommandKeywords.ID}, new StartGameCommand());
-        commandTrie.add(new String[]{CommandKeywords.STOP, CommandKeywords.ID}, new StopGameCommand());
-        commandTrie.add(new String[]{CommandKeywords.FORCE_STOP, CommandKeywords.ID}, new ForceStopGameCommand());
-        commandTrie.add(new String[]{CommandKeywords.LOAD, CommandKeywords.ID, CommandKeywords.FILENAME}, new LoadCommand());
-        commandTrie.add(new String[]{CommandKeywords.SAVE, CommandKeywords.ID, CommandKeywords.FILENAME}, new SaveCommand());
+        registerCommands();
+    }
+
+    public static SurvivalGame getGame(String id) {
+        return survivalGameMap.get(id);
     }
 
     /**
@@ -115,6 +90,211 @@ public class BukkitSurvivalGamesPlugin extends JavaPlugin {
                 .collect(Collectors.toSet());
     }
 
+    private void registerCommand(String[] words, CommandArgs[] args, SurvivalGamesCommand command) {
+        commandTrie.add(words, command);
+        List<CommandArgs> list = new LinkedList<>();
+        Collections.addAll(list, args);
+        commandArgs.put(command, list);
+    }
+
+    private void registerCommand(String[] words, SurvivalGamesCommand command) {
+        commandTrie.add(words, command);
+    }
+
+
+    private void registerCommands() {
+        registerCommand(
+                new String[]{CommandKeywords.CREATE},
+                new CommandArgs[]{CommandArgs.ID},
+                new CreateGameCommand());
+        registerCommand(
+                new String[]{CommandKeywords.LIST},
+                new ListGamesCommand());
+        registerCommand(
+                new String[]{CommandKeywords.DELETE},
+                new CommandArgs[]{CommandArgs.ID},
+                new DeleteGameCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.CENTER},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintCenterCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.CHEST, CommandKeywords.MIDPOINT},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintChestMidpointCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.CHEST, CommandKeywords.RANGE},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintChestRangeCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.COUNTDOWN},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintCountdownCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.EXIT},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintExitCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.PLAYER_LIMIT},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintPlayerLimitCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.SPAWNS},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintSpawnsCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.WORLD},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintWorldCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.BOUNDS},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintBoundsCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.LOOT},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintLootCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.DEATHMATCH, CommandKeywords.RADIUS},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintDeathmatchRadiusCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.DEATHMATCH, CommandKeywords.TIME},
+                new CommandArgs[]{CommandArgs.ID},
+                new PrintDeathmatchTimeCommand());
+        registerCommand(
+                new String[]{CommandKeywords.PRINT, CommandKeywords.SPONSORS},
+                new PrintSponsorsCommand()
+        );
+        registerCommand(
+                new String[]{CommandKeywords.ADD, CommandKeywords.SPAWN},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.X, CommandArgs.Y, CommandArgs.Z},
+                new AddSpawnCommand());
+        registerCommand(
+                new String[]{CommandKeywords.CLEAR, CommandKeywords.SPAWNS},
+                new CommandArgs[]{CommandArgs.ID},
+                new ClearSpawnpointsCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.CENTER},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.X, CommandArgs.Y, CommandArgs.Z},
+                new SetCenterLocationCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.CHEST, CommandKeywords.MIDPOINT},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.MIDPOINT,},
+                new SetChestMidpointCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.CHEST, CommandKeywords.RANGE},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.RANGE},
+                new SetChestRangeCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.COUNTDOWN},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.COUNTDOWN},
+                new SetCountdownCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.EXIT},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.WORLDNAME, CommandArgs.X, CommandArgs.Y, CommandArgs.Z},
+                new SetExitCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.PLAYER_LIMIT},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.PLAYER_LIMIT},
+                new SetPlayerLimitCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.WORLD},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.WORLDNAME},
+                new SetWorldCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.BOUNDS},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.XMIN, CommandArgs.XMAX, CommandArgs.ZMIN, CommandArgs.ZMAX},
+                new SetBoundsCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.DEATHMATCH, CommandKeywords.RADIUS},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.DEATHMATCHRADIUS},
+                new SetDeathmatchRadiusCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SET, CommandKeywords.DEATHMATCH, CommandKeywords.TIME},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.DEATHMATCHTIME},
+                new SetDeathmatchTimeCommand());
+        registerCommand(
+                new String[]{CommandKeywords.ADD, CommandKeywords.HELD, CommandKeywords.LOOT},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.WEIGHT},
+                new AddHeldLootCommand());
+        registerCommand(
+                new String[]{CommandKeywords.READY},
+                new CommandArgs[]{CommandArgs.ID},
+                new ReadyGameCommand());
+        registerCommand(
+                new String[]{CommandKeywords.ADD, CommandKeywords.PLAYER},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.PLAYERNAME},
+                new AddPlayerCommand());
+        registerCommand(
+                new String[]{CommandKeywords.REMOVE, CommandKeywords.PLAYER},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.PLAYERNAME},
+                new RemovePlayerCommand());
+        registerCommand(
+                new String[]{CommandKeywords.ADD, CommandKeywords.SPECTATOR},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.PLAYERNAME},
+                new AddSpectatorCommand());
+        registerCommand(
+                new String[]{CommandKeywords.REMOVE, CommandKeywords.SPECTATOR},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.PLAYERNAME},
+                new RemoveSpectatorCommand());
+        registerCommand(
+                new String[]{CommandKeywords.START},
+                new CommandArgs[]{CommandArgs.ID},
+                new StartGameCommand());
+        registerCommand(
+                new String[]{CommandKeywords.STOP},
+                new CommandArgs[]{CommandArgs.ID},
+                new StopGameCommand());
+        registerCommand(
+                new String[]{CommandKeywords.FORCE, CommandKeywords.STOP},
+                new CommandArgs[]{CommandArgs.ID},
+                new ForceStopGameCommand());
+        registerCommand(
+                new String[]{CommandKeywords.FORCE, CommandKeywords.DEATHMATCH},
+                new CommandArgs[]{CommandArgs.ID},
+                new ForceDeathmatchCommand());
+        registerCommand(
+                new String[]{CommandKeywords.LOAD},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.FILENAME, CommandArgs.OVERWRITE},
+                new LoadCommand());
+        registerCommand(
+                new String[]{CommandKeywords.CHEST},
+                new CommandArgs[]{CommandArgs.ID},
+                new GetChestsCommand());
+        registerCommand(
+                new String[]{CommandKeywords.SAVE},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.FILENAME},
+                new SaveCommand());
+        registerCommand(
+                new String[]{CommandKeywords.GIVE, CommandKeywords.SPONSOR},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.PLAYERNAME, CommandArgs.SPONSOR},
+                new SponsorCommand()
+        );
+        registerCommand(
+                new String[]{CommandKeywords.REFILL, CommandKeywords.CHESTS},
+                new CommandArgs[]{CommandArgs.ID},
+                new RefillChestsCommand()
+        );
+        registerCommand(
+                new String[]{CommandKeywords.BACKUP},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.FILENAME},
+                new BackupCommand()
+        );
+        registerCommand(
+                new String[]{CommandKeywords.RESTORE},
+                new CommandArgs[]{CommandArgs.ID, CommandArgs.BACKUPNAME},
+                new RestoreGameCommand()
+        );
+    }
+
+    @Override
+    public void onLoad() {
+        if (!getDataFolder().mkdirs()) {
+            Bukkit.getLogger().warning("Unable to make plugin folder");
+        }
+    }
+
     @Override
     public void onEnable() {
         survivalGameMap.clear();
@@ -122,8 +302,42 @@ public class BukkitSurvivalGamesPlugin extends JavaPlugin {
         Bukkit.getLogger().info("Sponge Survival Games Plugin Enabled");
         getCommand(CommandKeywords.SSG).setExecutor(commandExecutor);
         getCommand(CommandKeywords.SSG).setTabCompleter(tabCompleter);
-        
+
         Loot.registerAliases();
+        Backup.registerAliases();
+    }
+
+    @Override
+    public void onDisable() {
+        File backupsFolder = new File(BukkitSurvivalGamesPlugin.plugin.getDataFolder(), "Backups");
+
+        if (!backupsFolder.isDirectory()) {
+            BukkitSurvivalGamesPlugin.plugin.getLogger().warning("Found file named 'Backup', but need name "
+                    + "for backup folders!\nFile will be deleted!");
+            if (!backupsFolder.delete()) {
+                BukkitSurvivalGamesPlugin.plugin.getLogger().warning("Unable to delete backup file!");
+            }
+        }
+
+        if (!backupsFolder.exists()) {
+            if (!backupsFolder.mkdirs()) {
+                BukkitSurvivalGamesPlugin.plugin.getLogger().warning("Unable to make backups directory!");
+            }
+        }
+
+
+        survivalGameMap.values().stream().filter(game -> game.getState() == SurvivalGameState.RUNNING || game.getState() == SurvivalGameState.DEATHMATCH).forEach(game -> {
+            getLogger().warning("Taking emergency backup of game: " + game.getID());
+            File file = new File(backupsFolder, "EBACKUP[" + game.getID() + "].yml");
+
+            Backup backup = new Backup(game);
+            YamlConfiguration config = backup.asConfig();
+            try {
+                config.save(file);
+            } catch (IOException e) {
+                getLogger().warning(ChatColor.RED + "Error encountered when saving backup!");
+            }
+        });
     }
 
 }

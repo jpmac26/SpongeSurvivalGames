@@ -23,25 +23,11 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.tasks;
+package io.github.m0pt0pmatt.spongesurvivalgames.exceptions;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.TaskException;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.util.Vector;
-
-/**
- * Class for creating the chests in the center of the game
- */
-public class CreateCenterChestsTask implements SurvivalGameTask {
+public class NoDeathmatchTimeException extends SurvivalGameException {
     @Override
-    public void execute(SurvivalGame game) throws TaskException {
-        Location center = game.getCenter().get();
-        center.add(new Vector(1, 0, 0)).getBlock().setType(Material.CHEST);
-        center.add(new Vector(-1, 0, 0)).getBlock().setType(Material.CHEST);
-        center.add(new Vector(0, 0, 1)).getBlock().setType(Material.CHEST);
-        center.add(new Vector(0, 0, -1)).getBlock().setType(Material.CHEST);
-        center.add(new Vector(0, 1, 0)).getBlock().setType(Material.CHEST);
+    public String getDescription() {
+        return "NoDeathmatchTimeException";
     }
 }

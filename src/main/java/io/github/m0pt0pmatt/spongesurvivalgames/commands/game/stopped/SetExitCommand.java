@@ -25,11 +25,11 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NoWorldException;
-import org.bukkit.Bukkit;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Map;
 
@@ -40,25 +40,45 @@ import java.util.Map;
 public class SetExitCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.WORLDNAME)) {
-            Bukkit.getLogger().warning("World name was not present.");
-            return false;
+        String worldName;
+        if (!arguments.containsKey(CommandArgs.WORLDNAME)) {
+            if (sender instanceof Player) {
+                worldName = ((Player) sender).getWorld().getName();
+            } else {
+                sender.sendMessage("World name was not present.");
+                return false;
+            }
+        } else {
+            worldName = arguments.get(CommandArgs.WORLDNAME);
         }
-        String worldName = arguments.get(CommandKeywords.WORLDNAME);
 
+        String xString;
+        String yString;
+        String zString;
 
-        String xString = arguments.get(CommandKeywords.X);
-        String yString = arguments.get(CommandKeywords.Y);
-        String zString = arguments.get(CommandKeywords.Z);
-        if (!arguments.containsKey(CommandKeywords.X) || !arguments.containsKey(CommandKeywords.X) || !arguments.containsKey(CommandKeywords.X)) {
-            Bukkit.getLogger().warning("Missing one or more axis for coordinates.");
+        if (!arguments.containsKey(CommandArgs.X) || !arguments.containsKey(CommandArgs.X) || !arguments.containsKey(CommandArgs.X)) {
+            if (sender instanceof Player) {
+                Block block = ((Player) sender).getLocation().getBlock();
+                xString = String.valueOf(block.getX());
+                yString = String.valueOf(block.getY());
+                zString = String.valueOf(block.getZ());
+            } else {
+                sender.sendMessage("Missing coordinates");
+                return false;
+            }
+        } else if (!arguments.containsKey(CommandArgs.X) || !arguments.containsKey(CommandArgs.X) || !arguments.containsKey(CommandArgs.X)) {
+            sender.sendMessage("Missing one or more axis for coordinates.");
             return false;
+        } else {
+            xString = arguments.get(CommandArgs.X);
+            yString = arguments.get(CommandArgs.Y);
+            zString = arguments.get(CommandArgs.Z);
         }
 
         int x, y, z;
@@ -67,18 +87,18 @@ public class SetExitCommand extends StoppedCommand {
             y = Integer.parseInt(yString);
             z = Integer.parseInt(zString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert from String to Integer");
+            sender.sendMessage("Unable to convert from String to Integer");
             return false;
         }
 
         try {
-            BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setExitLocation(worldName, x, y, z);
+            game.setExitLocation(worldName, x, y, z);
         } catch (NoWorldException e) {
-            Bukkit.getLogger().warning("No such world \"" + worldName + "\".");
+            sender.sendMessage("No such world \"" + worldName + "\".");
             return false;
         }
 
-        Bukkit.getLogger().info("Exit location for game \"" + id + "\" set to world: " + worldName + " (" + x + "," + y + "," + z + ").");
+        sender.sendMessage("Exit location for game \"" + game.getID() + "\" set to world: " + worldName + " (" + x + "," + y + "," + z + ").");
         return true;
     }
 }

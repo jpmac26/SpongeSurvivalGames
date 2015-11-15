@@ -25,9 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 
@@ -40,19 +39,19 @@ import java.util.Optional;
 public class PrintExitCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        Optional<Location> exit = BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getExit();
+        Optional<Location> exit = game.getExitLocation();
         if (!exit.isPresent()) {
-            Bukkit.getLogger().info("Game: \"" + id + "\", No Exit Location.");
+            sender.sendMessage("Game: \"" + game.getID() + "\", No Exit Location.");
             return false;
         }
 
-        Bukkit.getLogger().info("Game: \"" + id + "\", Exit Location: \"" + exit.get() + "\".");
+        sender.sendMessage("Game: \"" + game.getID() + "\", Exit Location: \"" + exit.get() + "\".");
         return true;
     }
 }

@@ -25,10 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NegativeCountdownTimeException;
-import org.bukkit.Bukkit;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NegativeNumberException;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -39,34 +37,34 @@ import java.util.Map;
 public class SetCountdownCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.COUNTDOWN)) {
-            Bukkit.getLogger().warning("No Countdown time specified");
+        if (!arguments.containsKey(CommandArgs.COUNTDOWN)) {
+            sender.sendMessage("No Countdown time specified");
             return false;
         }
-        String countdownTimeString = arguments.get(CommandKeywords.COUNTDOWN);
+        String countdownTimeString = arguments.get(CommandArgs.COUNTDOWN);
 
         int countdownTime;
         try {
             countdownTime = Integer.parseInt(countdownTimeString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert String to Integer");
+            sender.sendMessage("Unable to convert String to Integer");
             return false;
         }
 
         try {
-            BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setCountdownTime(countdownTime);
-        } catch (NegativeCountdownTimeException e) {
-            Bukkit.getLogger().warning("Negative countdown times are not valid");
+            game.setCountdownTime(countdownTime);
+        } catch (NegativeNumberException e) {
+            sender.sendMessage("Negative countdown times are not valid");
             return false;
         }
 
-        Bukkit.getLogger().info("Game \"" + id + "\" now has a countdown timer of \"" + countdownTime + "\" seconds.");
+        sender.sendMessage("Game \"" + game.getID() + "\" now has a countdown timer of \"" + countdownTime + "\" seconds.");
         return true;
     }
 }

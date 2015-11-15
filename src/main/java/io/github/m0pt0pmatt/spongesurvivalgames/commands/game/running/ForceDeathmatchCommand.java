@@ -23,11 +23,25 @@
  * THE SOFTWARE.
  */
 
-package io.github.m0pt0pmatt.spongesurvivalgames.exceptions;
+package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.running;
 
-public class EmptyLootGeneratorException extends SurvivalGameException {
-	@Override
-	public String getDescription() {
-		return "The loot generator cannot be empty!";
-	}
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+
+import java.util.Map;
+
+public class ForceDeathmatchCommand extends RunningCommand {
+    @Override
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
+
+        if (!super.execute(sender, arguments)) {
+            return false;
+        }
+
+        game.startDeathMatch();
+
+        Bukkit.getLogger().warning("Survival Game \"" + game.getID() + "\" is now starting a DEATHMATCH.");
+        return true;
+    }
 }

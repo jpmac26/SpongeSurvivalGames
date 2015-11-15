@@ -1,8 +1,0 @@
-name: BukkitSurvivalGames
-main: io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin
-version: 1.0
-commands:
-  spongesurvivalgames:
-    aliases: ssg
-    usage: /ssg [args]
-    description: Base command for Sponge/Bukkit Survival Games

@@ -26,9 +26,8 @@
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game;
 
 import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.config.SurvivalGameConfigSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -44,29 +43,29 @@ public class SaveCommand extends GameCommand {
     private static final SurvivalGameConfigSerializer serializer = new SurvivalGameConfigSerializer();
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        String fileName = arguments.get(CommandKeywords.FILENAME);
-        if (!arguments.containsKey(CommandKeywords.FILENAME)) {
-            Bukkit.getLogger().warning("No file name given.");
+        String fileName = arguments.get(CommandArgs.FILENAME);
+        if (!arguments.containsKey(CommandArgs.FILENAME)) {
+            sender.sendMessage("No file name given.");
             return false;
         }
 
         File file = new File(BukkitSurvivalGamesPlugin.plugin.getDataFolder(), fileName);
-        YamlConfiguration config = serializer.serialize(BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getConfig());
+        YamlConfiguration config = serializer.serialize(game.getConfig());
 
         try {
             config.save(file);
         } catch (IOException e) {
-            Bukkit.getLogger().warning("Unable to save config file");
+            sender.sendMessage("Unable to save config file");
             return false;
         }
 
-        Bukkit.getLogger().info("Config saved");
-        return false;
+        sender.sendMessage("Config saved");
+        return true;
     }
 }

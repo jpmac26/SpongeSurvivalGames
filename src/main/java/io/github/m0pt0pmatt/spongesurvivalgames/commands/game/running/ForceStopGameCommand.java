@@ -25,9 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.running;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.TaskException;
-import org.bukkit.Bukkit;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.SurvivalGameException;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -39,20 +38,19 @@ import java.util.Map;
 public class ForceStopGameCommand extends RunningCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
         try {
-            BukkitSurvivalGamesPlugin.survivalGameMap.get(id).stop();
-        } catch (TaskException e) {
-            Bukkit.getLogger().warning(e.getMessage());
-            return false;
+            game.stop();
+        } catch (SurvivalGameException e) {
+            sender.sendMessage(e.getDescription());
         }
 
-        Bukkit.getLogger().warning("Survival Game \"" + id + "\" is now STOPPED.");
+        sender.sendMessage("Survival Game \"" + game.getID() + "\" is now STOPPED.");
         return true;
     }
 }

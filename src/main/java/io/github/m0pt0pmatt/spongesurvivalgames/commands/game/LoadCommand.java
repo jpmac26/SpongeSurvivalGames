@@ -26,10 +26,9 @@
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game;
 
 import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.config.SurvivalGameConfig;
 import io.github.m0pt0pmatt.spongesurvivalgames.config.SurvivalGameConfigSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -44,36 +43,50 @@ import java.util.Map;
 public class LoadCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.FILENAME)) {
-            Bukkit.getLogger().warning("No file name given.");
+        if (!arguments.containsKey(CommandArgs.FILENAME)) {
+            sender.sendMessage("No file name given.");
             return false;
         }
-        String fileName = arguments.get(CommandKeywords.FILENAME);
-        
+        String fileName = arguments.get(CommandArgs.FILENAME);
+
         File file = new File(BukkitSurvivalGamesPlugin.plugin.getDataFolder(), fileName);
-        
+
         SurvivalGameConfigSerializer serializer = new SurvivalGameConfigSerializer();
         YamlConfiguration yaml = new YamlConfiguration();
 
         try {
             yaml.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            Bukkit.getLogger().warning("Unable to load config file");
+            sender.sendMessage("Unable to load config file");
             return false;
         }
 
+        boolean overwrite;
+
+        if (arguments.containsKey(CommandArgs.OVERWRITE) && arguments.get(CommandArgs.OVERWRITE).equalsIgnoreCase("true")) {
+            overwrite = true;
+            sender.sendMessage("Loading config and overwriting missing fields with defaults...");
+        } else {
+            overwrite = false;
+            sender.sendMessage("Loading config and ignoring empty fields...");
+        }
+
         SurvivalGameConfig config;
+        if (game.getConfig() == null) {
+            game.setConfig(new SurvivalGameConfig());
+        }
 
-        config = serializer.deserialize(yaml);
+        config = game.getConfig();
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setConfig(config);
-        Bukkit.getLogger().info("Config file loaded");
+        serializer.deserialize(config, yaml, overwrite);
+
+        sender.sendMessage("Config file loaded");
         return true;
     }
 }

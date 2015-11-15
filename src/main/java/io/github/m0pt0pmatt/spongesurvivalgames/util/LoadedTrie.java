@@ -26,7 +26,7 @@
 package io.github.m0pt0pmatt.spongesurvivalgames.util;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +35,11 @@ import java.util.Map;
  * <p>A LoadedTrie is a Trie where a payload is stored at the end of each branch (each leaf node).</p>
  *
  * @param <T> The type which makes up the entire branch of the trie. For standard tries, this type is Character
- * @param <D> The type data to stor at the end of branches (leaf nodes).
+ * @param <D> The type data to store at the end of branches (leaf nodes).
  */
 public class LoadedTrie<T, D> {
 
-    private Node first = new Node();
+    private final Node first = new Node();
 
     /**
      * Adds a new branch to the trie
@@ -62,84 +62,65 @@ public class LoadedTrie<T, D> {
         current.data = data;
     }
 
-    /**
-     * Attempts to traverse the trie
-     *
-     * @param input           The input sequence for traversing the trie.
-     * @param missingSuffixes Any mismatched Ts are stored in this map. the key is the expected value, and the value was the actual input. Note that, since this is a Map, duplicates are erased
-     * @return The data if a leaf node was reached, null otherwise
-     */
-    public D match(T[] input, Map<T, T> missingSuffixes) {
+    public D match(List<T> input) {
+
         if (input == null) return null;
 
         Node current = first;
-        int i;
 
         //Traverse the trie while we get true matches
-        for (i = 0; i < input.length; i++) {
-            if (current.children.containsKey(input[i])) {
-                current = current.children.get(input[i]);
+        for (Iterator<T> i = input.iterator(); i.hasNext(); i.remove()) {
+            T data = i.next();
+            if (current.children.containsKey(data)) {
+                current = current.children.get(data);
             } else {
                 break;
             }
         }
 
-        //If there is only one possible path, we can continue, storing the actual prefix
-        for (; current != null && current.children.size() > 0 && i < input.length; i++) {
+        if (current == null || current.data == null) return null;
 
-            //There should only be one valid path
-            if (current.children.entrySet().size() > 1) {
-                return null;
-            }
-
-            T key = current.children.entrySet().iterator().next().getKey();
-            missingSuffixes.put(key, input[i]);
-            current = current.children.get(key);
-        }
-
-        if (current == null) return null;
         return current.data;
     }
 
     /**
      * Returns all the possible immediate suffixes available after following a branch
-     *
-     * @param list the input sequence for traversing the trie
-     * @return List of the next Ts for the given input
      */
-    public List<T> partialMatch(T[] list) {
-        List<T> output = new LinkedList<>();
+    public D partialMatch(List<T> input, List<T> output) {
 
-        if (list == null || list.length < 1) {
+        if (output == null) {
+            return null;
+        }
+
+        if (input == null || input.size() < 1) {
             output.addAll(first.children.keySet());
-            return output;
+            return null;
         }
 
         Node current = first;
 
         //Traverse the trie while we get true matches
-        for (T t : list) {
-            if (current.children.containsKey(t)) {
-                current = current.children.get(t);
+        for (Iterator<T> i = input.iterator(); i.hasNext(); i.remove()) {
+            T data = i.next();
+            if (current.children.containsKey(data)) {
+                current = current.children.get(data);
             } else {
                 break;
             }
         }
 
-        if (current != null) {
-            output.addAll(current.children.keySet());
+        if (current == null) {
+            return null;
         }
 
-        return output;
+        output.addAll(current.children.keySet());
+        return current.data;
+
     }
 
     private class Node {
-        Map<T, Node> children = new HashMap<>();
-        D data;
-
-        public Node() {
-            this.data = null;
-        }
-
+        final Map<T, Node> children = new HashMap<>();
+        D data = null;
     }
+
 }

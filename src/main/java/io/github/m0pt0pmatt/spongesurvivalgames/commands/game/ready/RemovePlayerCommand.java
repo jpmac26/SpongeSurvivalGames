@@ -25,11 +25,11 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.ready;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.Map;
 
@@ -39,26 +39,31 @@ import java.util.Map;
 public class RemovePlayerCommand extends ReadyCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.PLAYERNAME)) {
-            Bukkit.getLogger().warning("Player name is not present.");
+        if (!arguments.containsKey(CommandArgs.PLAYERNAME)) {
+            sender.sendMessage("Player name is not present.");
             return false;
         }
-        String playerName = arguments.get(CommandKeywords.PLAYERNAME);
+        String playerName = arguments.get(CommandArgs.PLAYERNAME);
 
         Player player = Bukkit.getServer().getPlayer(playerName);
         if (player == null) {
-            Bukkit.getLogger().warning("No such player \"" + playerName + "\".");
+            sender.sendMessage("No such player \"" + playerName + "\".");
             return false;
         }
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).removePlayer(player.getUniqueId());
-        Bukkit.getLogger().info("Player \"" + playerName + "\" removed from survival game \"" + id + "\".");
+        game.removePlayer(player.getUniqueId());
+
+        Scoreboard board = game.getLobbyScoreboard();
+        board.resetScores(player.getName());
+        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+
+        sender.sendMessage("Player \"" + playerName + "\" removed from survival game \"" + game.getID() + "\".");
 
         return true;
     }

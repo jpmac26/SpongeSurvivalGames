@@ -25,9 +25,7 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
-import org.bukkit.Bukkit;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -38,28 +36,28 @@ import java.util.Map;
 public class SetPlayerLimitCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.PLAYER_LIMIT)) {
-            Bukkit.getLogger().warning("Player limit was not present.");
+        if (!arguments.containsKey(CommandArgs.PLAYER_LIMIT)) {
+            sender.sendMessage("Player limit was not present.");
             return false;
         }
-        String playerLimitString = arguments.get(CommandKeywords.PLAYER_LIMIT);
+        String playerLimitString = arguments.get(CommandArgs.PLAYER_LIMIT);
 
         int playerLimit;
         try {
             playerLimit = Integer.parseInt(playerLimitString);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert from String to Integer");
+            sender.sendMessage("Unable to convert from String to Integer");
             return false;
         }
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setPlayerLimit(playerLimit);
-        Bukkit.getLogger().info("Player limit for game \"" + id + "\" set to " + playerLimit + ".");
+        game.setPlayerLimit(playerLimit);
+        sender.sendMessage("Player limit for game \"" + game.getID() + "\" set to " + playerLimit + ".");
         return true;
     }
 }

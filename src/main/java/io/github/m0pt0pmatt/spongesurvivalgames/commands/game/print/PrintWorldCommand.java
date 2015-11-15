@@ -25,9 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.print;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
 import io.github.m0pt0pmatt.spongesurvivalgames.commands.game.GameCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -39,19 +38,19 @@ import java.util.Optional;
 public class PrintWorldCommand extends GameCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        Optional<String> worldName = BukkitSurvivalGamesPlugin.survivalGameMap.get(id).getWorldName();
+        Optional<String> worldName = game.getWorldName();
         if (!worldName.isPresent()) {
-            Bukkit.getLogger().warning("Game: \"" + id + "\", No World set.");
+            sender.sendMessage("Game: \"" + game.getID() + "\", No World set.");
             return false;
         }
 
-        Bukkit.getLogger().info("Game: \"" + id + "\", World: \"" + worldName.get() + "\".");
+        sender.sendMessage("Game: \"" + game.getID() + "\", World: \"" + worldName.get() + "\".");
         return true;
     }
 }

@@ -28,7 +28,7 @@ package io.github.m0pt0pmatt.spongesurvivalgames.commands;
 /**
  * All keywords used when executing commands and when grabbing arguments
  */
-public class CommandKeywords {
+public final class CommandKeywords {
     public static final String CREATE = "create";
     public static final String DELETE = "delete";
     public static final String LIST = "list";
@@ -40,7 +40,7 @@ public class CommandKeywords {
     public static final String READY = "ready";
     public static final String START = "start";
     public static final String STOP = "stop";
-    public static final String FORCE_STOP = "force-stop";
+    public static final String FORCE = "force";
     public static final String LOAD = "load";
     public static final String SAVE = "save";
     public static final String CENTER = "center";
@@ -51,25 +51,22 @@ public class CommandKeywords {
     public static final String SPAWN = "spawn";
     public static final String SPAWNS = "spawns";
     public static final String WORLD = "world";
-    public static final String ID = "id";
-    public static final String X = "x";
-    public static final String Y = "y";
-    public static final String Z = "z";
-    public static final String WORLDNAME = "worldname";
-    public static final String FILENAME = "filename";
     public static final String PLAYER_LIMIT = "player-limit";
-    public static final String PLAYERNAME = "playername";
     public static final String SSG = "ssg";
     public static final String EXIT = "exit";
     public static final String PLAYER = "player";
     public static final String BOUNDS = "bounds";
-    public static final String XMIN = "xmin";
-    public static final String XMAX = "xmax";
-    public static final String YMIN = "ymin";
-    public static final String YMAX = "ymax";
-    public static final String ZMIN = "zmin";
-    public static final String ZMAX = "zmax";
     public static final String LOOT = "loot";
-    public static final String WEIGHT = "weight";
     public static final String HELD = "HELD";
+    public static final String DEATHMATCH = "deathmatch";
+    public static final String RADIUS = "radius";
+    public static final String TIME = "time";
+    public static final String GIVE = "give";
+    public static final String SPONSOR = "sponsor";
+    public static final String SPONSORS = "sponsors";
+    public static final String SPECTATOR = "spectator";
+    public static final String REFILL = "refill";
+    public static final String CHESTS = "chests";
+    public static final String BACKUP = "backup";
+    public static final String RESTORE = "restore";
 }

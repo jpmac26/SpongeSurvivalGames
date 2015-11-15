@@ -25,9 +25,8 @@
 
 package io.github.m0pt0pmatt.spongesurvivalgames.commands.game.stopped;
 
-import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandKeywords;
-import org.bukkit.Bukkit;
+import io.github.m0pt0pmatt.spongesurvivalgames.commands.CommandArgs;
+import io.github.m0pt0pmatt.spongesurvivalgames.exceptions.NegativeNumberException;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
@@ -38,29 +37,35 @@ import java.util.Map;
 public class SetChestMidpointCommand extends StoppedCommand {
 
     @Override
-    public boolean execute(CommandSender sender, Map<String, String> arguments) {
+    public boolean execute(CommandSender sender, Map<CommandArgs, String> arguments) {
 
         if (!super.execute(sender, arguments)) {
             return false;
         }
 
-        if (!arguments.containsKey(CommandKeywords.MIDPOINT)) {
-            Bukkit.getLogger().warning("Chest midpoint was not present.");
+        if (!arguments.containsKey(CommandArgs.MIDPOINT)) {
+            sender.sendMessage("Chest midpoint was not present.");
             return false;
         }
 
-        String chestMidpoint = arguments.get(CommandKeywords.MIDPOINT);
+        String chestMidpoint = arguments.get(CommandArgs.MIDPOINT);
 
         Double midpoint;
         try {
             midpoint = Double.parseDouble(chestMidpoint);
         } catch (NumberFormatException e) {
-            Bukkit.getLogger().warning("Unable to convert String to Double");
+            sender.sendMessage("Unable to convert String to Double");
             return false;
         }
 
-        BukkitSurvivalGamesPlugin.survivalGameMap.get(id).setChestMidpoint(midpoint);
-        Bukkit.getLogger().info("Chest midpoint for game \"" + id + "\" set to " + midpoint + ".");
+        try {
+            game.setChestMidpoint(midpoint);
+        } catch (NegativeNumberException e) {
+            sender.sendMessage("Chest midpoint cannot be negative.");
+            return false;
+        }
+
+        sender.sendMessage("Chest midpoint for game \"" + game.getID() + "\" set to " + midpoint + ".");
         return true;
     }
 }

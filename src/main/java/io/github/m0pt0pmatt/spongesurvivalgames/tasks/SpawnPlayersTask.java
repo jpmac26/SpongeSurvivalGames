@@ -39,13 +39,12 @@ import java.util.Set;
 /**
  * Task for teleporting players
  */
-public class SpawnPlayersTask implements SurvivalGameTask {
+class SpawnPlayersTask implements SurvivalGameTask {
 
     @Override
-    public void execute(SurvivalGame game) {
-
+    public boolean execute(SurvivalGame game) {
         Set<Vector> spawnLocations = new HashSet<>();
-        spawnLocations.addAll(game.getSpawns());
+        spawnLocations.addAll(game.getSpawnVectors());
         Iterator<Vector> spawnIterator = spawnLocations.iterator();
         BukkitSurvivalGamesPlugin.getPlayers(game.getPlayerUUIDs()).stream()
                 .forEach(player -> {
@@ -54,5 +53,6 @@ public class SpawnPlayersTask implements SurvivalGameTask {
                     Location location = new Location(world, spawnPoint.getX(), spawnPoint.getY(), spawnPoint.getZ());
                     player.teleport(location.add(0.5, 0, 0.5));
                 });
+        return true;
     }
 }

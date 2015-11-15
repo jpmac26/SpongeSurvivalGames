@@ -26,51 +26,82 @@
 package io.github.m0pt0pmatt.spongesurvivalgames.events;
 
 import io.github.m0pt0pmatt.spongesurvivalgames.BukkitSurvivalGamesPlugin;
-import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGame;
 import io.github.m0pt0pmatt.spongesurvivalgames.SurvivalGameState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import java.util.Map;
 
 /**
  * Listener class for the plugin.
  */
+@SuppressWarnings("unused")
 public class PlayerEventListener implements Listener {
+	
+	@EventHandler
+	public void onPlayerStupid(EntityDamageEvent e) {
+		if (!(e.getEntity() instanceof Player)) {
+			return;
+		}
+		
+		Player player = (Player) e.getEntity();
+		
+		long count = BukkitSurvivalGamesPlugin.survivalGameMap.values().parallelStream()
+        	.filter( g -> g.getState().equals(SurvivalGameState.RUNNING) || g.getState().equals(SurvivalGameState.DEATHMATCH))
+        	.filter( g -> g.getPlayerUUIDs().contains(player.getUniqueId()))
+        	.count();
+		
+		if (count < 1) {
+			e.setCancelled(true);
+		}
+		
+		
+	}
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
 
         Player player = event.getEntity();
-
-        for (Map.Entry<String, SurvivalGame> game : BukkitSurvivalGamesPlugin.survivalGameMap.entrySet()) {
-            if (game.getValue().getState().equals(SurvivalGameState.RUNNING)) {
-                if (game.getValue().getWorldName().get().equals(player.getLocation().getWorld().getName())) {
-                    //Death has occurred inside the game
-                    game.getValue().reportDeath(player.getUniqueId());
-                    return;
-                }
-            }
-        }
-
+        BukkitSurvivalGamesPlugin.survivalGameMap.values()
+                .parallelStream()
+                .filter( g -> g.getState().equals(SurvivalGameState.RUNNING) || g.getState().equals(SurvivalGameState.DEATHMATCH))
+                .filter( g -> g.getPlayerUUIDs().contains(player.getUniqueId()))
+                .forEach(g -> {
+                    g.reportDeath(player.getUniqueId());
+                    player.setBedSpawnLocation(g.getExitLocation().get(), true);
+                });
     }
 
     @EventHandler
     public void onPlayerDisconnect(PlayerQuitEvent event) {
 
         Player player = event.getPlayer();
+        BukkitSurvivalGamesPlugin.survivalGameMap.values()
+                .parallelStream()
+                .filter( g -> g.getPlayerUUIDs().contains(player.getUniqueId()))
+                .forEach(g -> g.reportDeath(player.getUniqueId()));
+    }
 
-        for (Map.Entry<String, SurvivalGame> game : BukkitSurvivalGamesPlugin.survivalGameMap.entrySet()) {
-            if (game.getValue().getState().equals(SurvivalGameState.RUNNING)) {
-                if (game.getValue().getWorldName().get().equals(player.getLocation().getWorld().getName())) {
-                    //Player has quit in the middle of a match
-                    game.getValue().reportDeath(player.getUniqueId());
-                    return;
-                }
-            }
-        }
+    @EventHandler
+    public void onPlayerUseBed(PlayerBedEnterEvent event){
+
+        Player player = event.getPlayer();
+        if (BukkitSurvivalGamesPlugin.survivalGameMap.values()
+                .parallelStream()
+                .filter( g -> g.getPlayerUUIDs().contains(player.getUniqueId()))
+                .count() > 0) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void event(PlayerKickEvent event){
+        Player player = event.getPlayer();
+        BukkitSurvivalGamesPlugin.survivalGameMap.values()
+                .parallelStream()
+                .filter( g -> g.getPlayerUUIDs().contains(player.getUniqueId()))
+                .forEach(g -> g.reportDeath(player.getUniqueId()));
     }
 }
